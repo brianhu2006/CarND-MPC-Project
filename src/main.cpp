@@ -91,6 +91,9 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          double delta = j[1]["steering_angle"];
+
+          double a = j[1]["throttle"];
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -98,8 +101,39 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+
+            Eigen::VectorXd state(6);
+
+            //Transform waypoints into car-coordinates
+
+            Eigen::VectorXd x_rel(ptsx.size());
+            Eigen::VectorXd y_rel(ptsx.size());
+            double car_x=(px*cos(psi))+(py*sin(psi));
+            double car_y=(py*cos(psi))-(px*sin(psi));
+            for (int i=0;i<ptsx.size();i++){
+                x_rel[i]=(ptsx[i]*cos(psi))+(ptsy[i]*sin(psi))-car_x;
+                y_rel[i]=(ptsy[i]*cos(psi))-(ptsx[i]*sin(psi))-car_y;
+
+            }
+
+            double new_x=0.0;
+            double new_y=0.0;
+            double new_psi=0.0;
+            auto coeffs = polyfit(x_rel,y_rel,3) ;
+            cout<<"coeffs:"<<coeffs[0]<<" + "<<coeffs[1]<<" x+ "<<coeffs[2]<<" x^2+ "<<coeffs[3]<<" x^3"<<endl;
+
+            double cte = polyeval(coeffs, new_x) - new_y;
+
+            double epsi = new_psi - atan(coeffs[1]+(2*coeffs[1]*new_x)+(3*coeffs[2]*new_x));//Wrt car
+
+            cout<<"State:"<<new_x<<","<<new_y<<","<< new_psi<<","<< v<<","<< cte<<","<< epsi<<endl;
+            state << new_x, new_y, new_psi, v, cte, epsi;
+            auto vars = mpc.Solve(state, coeffs);
+
+            double steer_value=-vars[6];
+            double throttle_value=vars[7];
+
+
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -110,6 +144,16 @@ int main() {
           //Display the MPC predicted trajectory 
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
+
+
+          for (int i = 2; i < vars.size(); i++) {
+            if (i % 2 == 0) {
+              mpc_x_vals.push_back(vars[i]);
+            } else {
+              mpc_y_vals.push_back(vars[i]);
+            }
+          }
+
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
