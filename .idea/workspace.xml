@@ -12,13 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f07ba7de-a725-4947-a997-a6b655e2838c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/install_ipopt.sh" afterPath="$PROJECT_DIR$/install_ipopt.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ipopt.rb" afterPath="$PROJECT_DIR$/ipopt.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mumps.rb" afterPath="$PROJECT_DIR$/mumps.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/MPC.cpp" afterPath="$PROJECT_DIR$/src/MPC.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main.cpp" afterPath="$PROJECT_DIR$/src/main.cpp" />
     </list>
     <ignored path="CarND-MPC-Project.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -137,8 +131,8 @@
           </provider>
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="270">
-                <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+              <first_editor relative-caret-position="-15">
+                <caret line="19" column="34" selection-start-line="19" selection-start-column="34" selection-end-line="19" selection-end-column="34" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -425,12 +419,12 @@
       <updated>1526916173731</updated>
       <workItem from="1526916174910" duration="3116000" />
       <workItem from="1526952658976" duration="563000" />
-      <workItem from="1527478438922" duration="6774000" />
+      <workItem from="1527478438922" duration="7017000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10453000" />
+    <option name="totallyTimeSpent" value="10696000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="823" extended-state="6" />
@@ -668,8 +662,8 @@
       </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="270">
-            <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <first_editor relative-caret-position="-15">
+            <caret line="19" column="34" selection-start-line="19" selection-start-column="34" selection-end-line="19" selection-end-column="34" />
             <folding />
           </first_editor>
           <second_editor />
