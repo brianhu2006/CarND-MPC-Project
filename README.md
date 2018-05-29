@@ -1,6 +1,25 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
 
+
+## Model 
+The vehicle model used in this project is a kinematic bicycle model.
+
+* x,y denote the position of the car
+* psi the heading direction
+* v its velocity
+* cte the cross-track error
+* epsi the orientation error
+* Lf is the distance between gravity of the vehicle and the front wheels
+
+## Process Steps
+1. transform global coordinate to car coordinate
+2. calculate poly Coefficients
+3. Prepare state Vector and coeff, pass the parameters to solve, 
+4. inside MPC solve,  define the Cost Function: Main objective - to minimize our cross track, heading, and velocity errors. A further enhancement is to constrain erratic control inputs. For example, if we're making a turn, we'd like the turn to be smooth, not sharp. Additionally, the vehicle velocity should not change too radically. This can be achieved by Minimizing change-rate & Minimizing the value gap between sequential actuations.
+To cover variable speed, 
+
+
 ---
 
 ## Dependencies

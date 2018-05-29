@@ -111,11 +111,11 @@ int main() {
             const double Lf = 2.67;
 
             // Predict the state
-            const double dt = 0.1;
-            px += v * cos(psi) * dt;
-            py += v * sin(psi) * dt;
-            psi += - v * steer_value/Lf * dt;
-            v += throttle_value * dt;
+            const double latency = 0.1;
+            px += v * cos(psi) * latency;
+            py += v * sin(psi) * latency;
+            psi += - v * steer_value/Lf * latency;
+            v += throttle_value * latency;
 
             // Convert reference angle
             for (unsigned int i = 0; i < ptsx.size(); i++)
@@ -130,12 +130,8 @@ int main() {
             Eigen::VectorXd ptsx_t = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptsx.data(), ptsx.size());
             Eigen::VectorXd ptsy_t = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptsy.data(), ptsy.size());
 
-            //double ptrx = &ptsx[0];
-            //Eigen::Map<Eigen::VectorXd> ptsx_t(ptrx, 6);
-            //double ptry = &ptsy[0];
-            //Eigen::Map<Eigen::VectorXd> ptsy_t(ptry, 6);
 
-            // Measure Polynomial Coefficients.
+            // calculate Polynomial Coefficients.
             auto coeffs = polyfit(ptsx_t, ptsy_t, 3);
 
             cout << "Coeffs Size: " << coeffs.size() << endl;
@@ -150,8 +146,8 @@ int main() {
             double epsi = -atan(coeffs[1]);
 
             // Incorporate latency considerations
-            cte += v * sin(epsi) * dt;
-            epsi += v * steer_value/Lf * dt;
+            cte += v * sin(epsi) * latency;
+            epsi += v * steer_value/Lf * latency;
 
             // Define the state vector
             Eigen::VectorXd state(6);
