@@ -6,7 +6,7 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25;
+size_t N = 10;
 double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
@@ -56,12 +56,12 @@ class FG_eval {
     // Minimize the use of actuators.
     for (int t = 0; t < N - 1; t++) {
       fg[0] += CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 10*CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (int t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 500*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
@@ -104,8 +104,11 @@ class FG_eval {
       AD<double> delta0 = vars[delta_start + t - 1];
       AD<double> a0 = vars[a_start + t - 1];
 
-      AD<double> f0 = coeffs[0] + coeffs[1] * x0;
-      AD<double> psides0 = CppAD::atan(coeffs[1]);
+      //AD<double> f0 = coeffs[0] + coeffs[1] * x0+ coeffs[2]*x0*x0;
+      //AD<double> psides0 = CppAD::atan(coeffs[1]+2*coeffs[2]*x0);
+
+        AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2]*x0*x0 + coeffs[3]*x0*x0*x0;
+        AD<double> psides0 = CppAD::atan(coeffs[1]+2*coeffs[2]*x0 + 3 * coeffs[3]*x0*x0);
 
       // Here's `x` to get you started.
       // The idea here is to constraint this value to be 0.
@@ -135,7 +138,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
+Trajectory MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
   size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
@@ -239,27 +242,18 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto cost = solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
 
-  // TODO: Return the first actuator values. The variables can be accessed with
-  // `solution.x[i]`.
-  //
-  // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
-  // creates a 2 element double vector.
-//  return {solution.x[x_start + 1],   solution.x[y_start + 1],
-//          solution.x[psi_start + 1], solution.x[v_start + 1],
-//          solution.x[cte_start + 1], solution.x[epsi_start + 1],
-//          solution.x[delta_start],   solution.x[a_start]};
 
 
-    vector<double> result;
-
-    result.push_back(solution.x[delta_start]);
-    result.push_back(solution.x[a_start]);
-
-    for (unsigned int t = 0; t < N; t++)
-    {
-        result.push_back(solution.x[x_start + t]);
-        result.push_back(solution.x[y_start + t]);
+    Trajectory traj;
+    for (auto i = 0; i < N-1 ; i++){
+        traj.X.push_back(solution.x[x_start+i]);
+        traj.Y.push_back(solution.x[y_start+i]);
+        traj.Delta.push_back(solution.x[delta_start+i]);
+        traj.A.push_back(solution.x[a_start+i]);
     }
 
-    return result;
+
+
+    return traj;
+
 }

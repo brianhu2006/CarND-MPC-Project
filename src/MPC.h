@@ -5,7 +5,17 @@
 #include "Eigen-3.3/Eigen/Core"
 
 using namespace std;
+struct Trajectory {
 
+    vector<double> X;
+    vector<double> Y;
+    vector<double> Psi;
+    vector<double> V;
+    vector<double> Cte;
+    vector<double> EPsi;
+    vector<double> Delta;
+    vector<double> A;
+};
 class MPC {
  public:
   MPC();
@@ -14,7 +24,7 @@ class MPC {
 
   // Solve the model given an initial state and polynomial coefficients.
   // Return the first actuatotions.
-  vector<double> Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
+  Trajectory Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
 };
 
 #endif /* MPC_H */

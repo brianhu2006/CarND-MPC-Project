@@ -65,6 +65,23 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+Eigen::MatrixXd transformGlobalToLocal(double x,
+                                       double y,
+                                       double psi,
+                                       const vector<double> & ptsx,
+                                       const vector<double> & ptsy) {
+
+    auto car_point = Eigen::MatrixXd(2,ptsx.size() );
+
+    for (auto i=0; i<ptsx.size() ; ++i){
+        car_point(0,i) =   cos(psi) * (ptsx[i] - x) + sin(psi) * (ptsy[i] - y);
+        car_point(1,i) =  -sin(psi) * (ptsx[i] - x) + cos(psi) * (ptsy[i] - y);
+    }
+
+    return car_point;
+
+}
+
 int main() {
   uWS::Hub h;
 
@@ -102,37 +119,13 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-            double steer_value;
-            double throttle_value;
 
-            v *= 1.609344;      // Convert speed
-            steer_value = j[1]["steering_angle"];
-            throttle_value = j[1]["throttle"];
-            const double Lf = 2.67;
+            Eigen::MatrixXd car_points = transformGlobalToLocal(px,py,psi,ptsx,ptsy);
+            Eigen::VectorXd car_points_x = car_points.row(0);
+            Eigen::VectorXd car_points_y = car_points.row(1);
 
-            // Predict the state
-            const double latency = 0.1;
-            px += v * cos(psi) * latency;
-            py += v * sin(psi) * latency;
-            psi += - v * steer_value/Lf * latency;
-            v += throttle_value * latency;
+            auto coeffs = polyfit(car_points_x, car_points_y, 3);
 
-            // Convert reference angle
-            for (unsigned int i = 0; i < ptsx.size(); i++)
-            {
-                double shift_x = ptsx[i] - px;
-                double shift_y = ptsy[i] - py;
-
-                ptsx[i] = shift_x * cos(0-psi) - shift_y * sin(0-psi);
-                ptsy[i] = shift_x * sin(0-psi) + shift_y * cos(0-psi);
-            }
-
-            Eigen::VectorXd ptsx_t = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptsx.data(), ptsx.size());
-            Eigen::VectorXd ptsy_t = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ptsy.data(), ptsy.size());
-
-
-            // calculate Polynomial Coefficients.
-            auto coeffs = polyfit(ptsx_t, ptsy_t, 3);
 
             cout << "Coeffs Size: " << coeffs.size() << endl;
             for (unsigned int i = 0; i < coeffs.size(); i++)
@@ -140,24 +133,18 @@ int main() {
                 cout << coeffs[i] << endl;
             }
 
-            // Calculate cte & epsi
-            double cte = polyeval(coeffs, 0);
-            //double epsi = psi - atan(coeffs[1]);
-            double epsi = -atan(coeffs[1]);
-
-            // Incorporate latency considerations
-            cte += v * sin(epsi) * latency;
-            epsi += v * steer_value/Lf * latency;
-
-            // Define the state vector
             Eigen::VectorXd state(6);
-            state << 0, 0, 0, v, cte, epsi;
 
-            // Call MPC Solver
-            auto vars = mpc.Solve(state, coeffs);
+            state << 0, 0, 0, v, polyeval(coeffs, 0), -atan(coeffs[1]);
 
-            steer_value = vars[0];
-            throttle_value = vars[1];
+
+            Trajectory traj = mpc.Solve(state, coeffs);
+
+            int latency=1;
+            double steer_value = traj.Delta.at(latency);
+            double throttle_value= traj.A.at(latency);
+
+
 
             json msgJson;
             // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -166,36 +153,17 @@ int main() {
             msgJson["throttle"] = throttle_value;
 
             //Display the MPC predicted trajectory
-            vector<double> mpc_x_vals;
-            vector<double> mpc_y_vals;
-
-            for (unsigned int t = 2; t < vars.size(); t++)
-            {
-                if (t%2 == 0) {
-                    mpc_x_vals.push_back(vars[t]);
-                }
-                else {
-                    mpc_y_vals.push_back(vars[t]);
-                }
-            }
-
-            //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
-            // the points in the simulator are connected by a Green line
-
-            msgJson["mpc_x"] = mpc_x_vals;
-            msgJson["mpc_y"] = mpc_y_vals;
+            msgJson["mpc_x"] = traj.X;
+            msgJson["mpc_y"] = traj.Y;
 
             //Display the waypoints/reference line
             vector<double> next_x_vals;
             vector<double> next_y_vals;
 
-            double poly_inc = 2.5;
-            unsigned int num_points = 25;
 
-            for (unsigned int t = 1; t < num_points; t++)
-            {
-                next_x_vals.push_back(poly_inc * t);
-                next_y_vals.push_back(polyeval(coeffs, poly_inc * t));
+            for (unsigned i=0 ; i < car_points_x.size(); ++i) {
+                next_x_vals.push_back(car_points_x(i));
+                next_y_vals.push_back(car_points_y(i));
             }
 
             //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
